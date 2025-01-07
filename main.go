@@ -18,7 +18,8 @@ const prefixLength = 8
 var clients = map[uuid.UUID][][powLength + prefixLength]byte{}
 
 func main() {
-	target := flag.String("target", "http://127.0.0.1:80", "target server")
+	port := flag.String("port", "8080", "port to listen on")
+	target := flag.String("url", "http://127.0.0.1:80", "target server")
 
 	flag.Parse()
 
@@ -28,7 +29,6 @@ func main() {
 	}
 
 	proxy := httputil.NewSingleHostReverseProxy(targetURL)
-
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Check for the powroxy-user uidCookie
@@ -92,7 +92,7 @@ func main() {
 					}
 					//fmt.Println("Pow matched, removing challenge")
 					clients[parsedPowUid] = newChallenges
-          r.Host = targetURL.Host
+					r.Host = targetURL.Host
 					proxy.ServeHTTP(w, r)
 					return
 				}
@@ -139,5 +139,5 @@ const prefix = "%x";
 	})
 
 	fmt.Printf("Listening on :8080, forwarding to %s\n", targetURL)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":"+*port, nil))
 }
